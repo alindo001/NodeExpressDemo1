@@ -1,8 +1,10 @@
+const { response } = require('express')
 const express = require('express')
 const app = express()
 PORT = 3001
 
-//
+app.use(express.json())
+
 let persons = [
     { 
       "id": 1,
@@ -44,6 +46,35 @@ app.get('/api/persons/:id', (req, res) => {
     }else{
       res.status(404).end()
     }
+})
+
+const generateId = () =>{
+  const maxID = persons.length > 0 ? Math.max(...persons.map(n => n.id)) : 0
+  return maxID +1
+}
+
+app.post('/api/persons', (req,res) => {
+    const body = req.body
+    if(!body.name){
+      return res.status(418).json({error: 'name is missing'})
+    }
+    if(!body.number){
+      return res.status(418).json({error: 'number is missing'})
+    }
+
+    if(persons.some(entry => entry.name ===body.name)){
+      return res.status(418).json({error: 'name must be unique'})
+    }
+
+      let entry = {
+        id: generateId(),
+        name: body.name,
+        number: body.number
+      }
+    
+    persons.push(entry)
+    res.json(entry)
+
 })
 
 app.delete('/api/persons/:id', (req, res) => {
